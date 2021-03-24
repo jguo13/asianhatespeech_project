@@ -5,7 +5,6 @@ RUN sudo apt-get update && sudo apt-get install dialog -y --no-install-recommend
 ADD hatebase_vocab_asian.csv /tmp
 ADD hatebase_vocab_chinese.csv /tmp
 ADD hatespeech.py /tmp
-ADD BE5E7B3BAE09762ADC693A15C64B839F.txt /tmp
 Add requirements.txt /
 
 RUN sudo apt-get update -y

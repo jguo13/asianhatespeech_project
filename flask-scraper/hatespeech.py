@@ -1,11 +1,11 @@
 from __future__ import print_function
 import basc_py4chan
 import pandas as pd
-import os
 import time
 import sys
 import copy
-import csv 
+import csv
+import os 
 
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
@@ -23,13 +23,7 @@ app.config.from_object(__name__)
 CORS(app, resources={r'/*': {'origins': '*'}})
 
 
-@app.route('/.well-known/pki-validation/BE5E7B3BAE09762ADC693A15C64B839F.txt', methods=['GET'])
-def return_files_tut():
-    if request.method == 'GET': 
-        try:
-            return send_file('BE5E7B3BAE09762ADC693A15C64B839F.txt', attachment_filename='BE5E7B3BAE09762ADC693A15C64B839F.txt')
-        except Exception as e:
-            return str(e)
+
 
 
 @app.route('/get_hate/ping', methods=['GET'])
@@ -44,30 +38,69 @@ def all_books():
         response_object["percentage"] = len_hate
         return jsonify(response_object)
 #define important variables
+def check_thread(thread, set_hate):
+    for s in set_hate:
+        print(thread.comment.lower())
+        if s.lower in thread.comment.lower():
+            return True
+    return False
 
 
 def check_hate():
-    print("here")
+    filename1 = 'crawled_data_true.csv'
+    filename2 = 'crawled_data_false.csv'
+    if os.path.isfile(filename1):
+
+        map_threads_true = set(pd.read_csv(filename1)["post_id"].to_list())
+        map_threads_false = set(pd.read_csv(filename2)["post_id"].to_list())
+
+    else:
+        map_threads_true = set()
+        map_threads_false = set()
+    start_time = time.time()
     board_name = 'pol'
     try:
-        list_hate = ['ABCs', 'ABC', 'spinks', 'spink', 'slopey', 'winks', 'slopes', 'slopies', 'slants', 'slopeheads', 'slant eyes', 'sideways vaginas', 'sideways cooters', 'sideways pussies', 'coolies', 'chonkies', 'chunkies', 'Chinese wetbacks', 'ching chongs', 'chinigs', 'chink a billies', 'chiggers', 'celestials', 'bamboo coons', 'chinig', 'sideways cooter', 'slopehead', 'chink a billy', 'Chinese wetback', 'bamboo coon', 'ching chong', 'coolie', 'slopy', 'chonky', 'chunky', 'sideways pussy', 'sideways vagina', 'chigger', 'slope', 'slant', 'slant eye', 'wink', 'celestial', 'whoriental', 'whorientals', 'gooky eyes', 'gooklets', 'gooklet', 'gookettes', 'gookette', 'gook eyed', 'gookies', 'gookie', 'goloids', 'goloid', 'ginks', 'gink', 'dog eaters', 'dog eater', 'yellow invaders', 'rice niggers', 'yellow invader', 'rice nigger']
+
+        set_hate = {'ABC', 'coolies', 'chink a billies', 'bamboo coons', 'chinig', 'slopehead', 'chink a billy', 'Chinese wetback', 'bamboo coon', 'ching chong', 'coolie', 'chigger', 'slope', 'slant', 'slant eye', 'wink', 'whoriental', 'gooklet', 'gookette', 'gook eyed', 'gookie', 'goloid', 'gink','dog eater', 'yellow invader', 'rice nigger'}
         board = basc_py4chan.Board(board_name)
         all_thread_ids = board.get_all_thread_ids()
         thread_count = 0
         hate_count = 0
         for id in all_thread_ids:
 
-            first_thread_id = id
-            thread = board.get_thread(first_thread_id)
-            if thread == None:
+            thread_count += 1
+            if id in map_threads_true:
+                hate_count += 1
                 continue
-            topic = thread.topic
-            for thread in thread.all_posts:
-                thread_count += 1
-                if any(s.lower() in thread.comment.lower() for s in list_hate):
+            if id in map_threads_false:
+                continue
+
+            thread = board.get_thread(id)
+            if thread == None or thread.closed == True:
+                thread_count += -1
+                continue
+
+
+            for threadcontent in thread.all_posts:
+                if any(s.lower() in threadcontent.comment.lower() for s in set_hate):
                     hate_count += 1
+                    map_threads_true.add(id)
+                    break
+                else:
+                    map_threads_false.add(id)
+
+        df1 = pd.DataFrame.from_dict(map_threads_true)
+        df1.columns = ["post_id"]
+        df1.to_csv(filename1, index=False)
+
+        df2 = pd.DataFrame.from_dict(map_threads_false)
+        df2.columns = ["post_id"]
+        df2.to_csv(filename2, index=False)
+
 
         percentage = "{:.2%}".format(hate_count / thread_count)
+        print("--- %s seconds ---" % (time.time() - start_time))
+
         return percentage
     except :
         return "error with the server, please refresh"
