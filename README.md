@@ -7,7 +7,7 @@ For our data, we wanted to analyze a social-media platform in order to gauge sen
 
 ## Analysis
 For the analysis of the data, we once again took inspiration from the Vice 2019 article and decided to gauge racial-tension through the frequency of hate-terms which were classified as "Asian" hate-terms.
-For this dictionary, we used [HateBase](https://hatebase.org/), which provides a free API and access to different classification of hate-terms. We decided to use this dictionary because it is widely used in academia and media. We also manually cleaned out any terms which were either outdated or recycled into a different meaning. One drawback to this approach is that the database itself was missing certain obvious racial epithets that are in circulation today.
+For this dictionary, we used [HateBase](https://hatebase.org/), which provides a free API and access to different classification of hate-terms. We decided to use this dictionary because it is widely used in academia and media. We also manually cleaned out any terms which were either outdated or had been recycled into a different meaning. One drawback to this approach is that the database itself was missing certain obvious racial epithets that are in circulation today.
 
 We chose to do text analysis and ran a script which would go through the data, and count the number of posts that in a given day contained "Asian" hate terms, to see how many times such terms were used on /pol and to see if there were any correlations with the pandemic timing.
 
